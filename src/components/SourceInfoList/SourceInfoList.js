@@ -1,21 +1,51 @@
 import * as React from 'react';
+import './SourceInfo.sass';
 import {getAllSourcesInformations} from "../../services/SourcesService/SourcesServices";
+import {Button, Table, Tag} from "antd";
+import {CheckCircleOutlined, CloseCircleOutlined, LinkOutlined} from "@ant-design/icons";
 
 export class SourceInfoList extends React.Component {
+    columns = [
+        {
+            title: "Disponibilité",
+            dataIndex: "status",
+            key: "status",
+            render: this.getItemStatus
+        },
+        {
+            title: "Nom",
+            dataIndex: "name",
+            key: "name",
+        },
+        {
+            title: "Magasin",
+            dataIndex: "shop",
+            key: "shop",
+        },
+        {
+            title: "Lien",
+            dataIndex: "url",
+            key: "url",
+            render: (text) => {
+                return <a href={text} target="_blank"><Button type="primary" shape="circle"><LinkOutlined /></Button></a>
+            }
+        },
+    ]
+    
     constructor(props) {
         super(props);
         this.state = {
             error: null,
-            isLoaded: false,
-            items: []
+            loading: true,
+            data: []
         };
     }
 
     componentDidMount() {
         getAllSourcesInformations().then(sources => {
             this.setState({
-                isLoaded: true,
-                items: sources
+                loading: false,
+                data: sources
             });
         }).catch(error => {
             this.setState({
@@ -26,20 +56,20 @@ export class SourceInfoList extends React.Component {
     }
     
     render() {
-        if (this.state.error) {
-            return <div>Erreur : {this.state.error.message}</div>;
-        } else if (!this.state.isLoaded) {
-            return <div>Chargement…</div>;
-        } else {
-            return (
-                <ul>
-                    {this.state.items.map(item => (
-                        <li key={item.name}>
-                            {item.name} {item.status}
-                        </li>
-                    ))}
-                </ul>
-            );
-        }
+        return (
+            <Table
+                columns={this.columns}
+                dataSource={this.state.data ? this.state.data : null}
+                loading={this.state.loading}
+            />
+        );
+    }
+
+    getItemStatus(status) {
+        const icon = status === 'inStock' ? <CheckCircleOutlined /> : <CloseCircleOutlined />;
+        const color = status === 'inStock' ? 'green' : 'red';
+        const text = status === 'inStock' ? 'en stock': 'rupture de stock';
+        
+        return <Tag icon={icon} color={color}>{text}</Tag>;
     }
 }
