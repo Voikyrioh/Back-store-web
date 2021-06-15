@@ -1,6 +1,6 @@
 import * as React from 'react';
-import './SourceInfo.sass';
-import {getAllSourcesInformations} from "../../services/SourcesService/SourcesServices";
+import './SourceInfoList.sass';
+import {getAllProductInformations} from "../../services/SourcesService/SourcesServices";
 import {Button, Table, Tag} from "antd";
 import {CheckCircleOutlined, CloseCircleOutlined, LinkOutlined} from "@ant-design/icons";
 
@@ -27,7 +27,7 @@ export class SourceInfoList extends React.Component {
             dataIndex: "url",
             key: "url",
             render: (text) => {
-                return <a href={text} target="_blank"><Button type="primary" shape="circle"><LinkOutlined /></Button></a>
+                return <a href={text} target="_blank" rel="noreferrer"><Button type="primary" shape="circle"><LinkOutlined /></Button></a>
             }
         },
     ]
@@ -42,7 +42,7 @@ export class SourceInfoList extends React.Component {
     }
 
     componentDidMount() {
-        getAllSourcesInformations().then(sources => {
+        getAllProductInformations().then(sources => {
             this.setState({
                 loading: false,
                 data: sources

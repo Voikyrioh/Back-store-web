@@ -1,5 +1,5 @@
-export function getAllSourcesInformations() {
-    return fetch("http://localhost:8080/sources/",
+export function getAllProductInformations() {
+    return fetch("http://localhost:8081/products/",
         {
             headers: {
                 "access-control-allow-origin" : "*",
