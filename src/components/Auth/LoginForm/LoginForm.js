@@ -1,16 +1,27 @@
 import './LoginForm.sass';
 import * as React from 'react';
-import {Button, Form, Input} from "antd";
+import {Button, Form, Input, notification} from "antd";
+import {loginUser} from "../../../services/AuthService/AuthService";
 
-function loginFailed() {}
-function loginUser() {}
+function loginFailed(event) {
+    console.log('ERROR : ', event);
+    notification['error']({
+        message: 'Formulaire incomplet',
+        description:
+            'Merci de renseigner correctement tous les champs.',
+    });
+}
 
 function LoginForm(props) {
+    const handleSubmit = (event) => {
+        loginUser(event, props.onLogged);
+    }
+
     return (
         <Form
             name="login"
-            onFinish={loginUser()}
-            onFinishFailed={loginFailed()}
+            onFinish={handleSubmit}
+            onFinishFailed={loginFailed}
         >
             <Form.Item
                 label="Nom d'utilisateur"

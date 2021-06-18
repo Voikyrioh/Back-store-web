@@ -1,3 +1,23 @@
+/**
+ * @typedef {Object} UserSession
+ * @property {string | null} username - Define for this react app the user's username
+ * @property {blob} [profilePicture] - User's profile picture blob
+ * @property {string|null} role - The role of the user in app
+ */
+
+/**
+ * @typedef {Object} sessionInfos
+ * @property {number} expiresIn - Time (in seconds) in which the session will be expired (default: 3600).
+ * @property {UserSession} [user] - User's session informations send by API.
+ */
+
+import {getDefaultHeaders, getJsonBody} from "../NetworkService";
+
+/**
+ *
+ * @param password
+ * @return {string|null}
+ */
 export function testPassword(password) {
     if (!password) {
         return null;
@@ -15,16 +35,84 @@ export function testPassword(password) {
     return null;
 }
 
-export function login(username, password) {
-    return fetch("http://localhost:8081/login/",
-        {
-            method: "POST",
-            body: JSON.stringify({username, password}),
-            headers: {
-                "access-control-allow-origin" : "*",
-                "Content-type": "application/json; charset=UTF-8"
-            }})
-        .then(response => response.json());
+/**
+ * Manage localStorage user session and userSession state.
+ * @param {sessionInfos} sessionInfos - login/logout/register API routes response.
+ * @param {function} userSession - Function to change user session state, passed by main app.
+ * @return {boolean}
+ */
+function changeLoginState(sessionInfos, userSession) {
+    if (!sessionInfos.expiresIn || Number.isNaN(sessionInfos.expiresIn)) {
+        console.error('Mauvaise réponse du serveur : ', sessionInfos);
+        return false;
+    }
+
+    if (sessionInfos.expiresIn > 0) {
+        const expireDate = new Date();
+        expireDate.setSeconds(expireDate.getSeconds() + 100);
+        const sessionExpiration = expireDate.getTime().toString(10);
+        const session = JSON.stringify(sessionInfos.user);
+
+        localStorage.setItem('user_session_expiration', sessionExpiration);
+        localStorage.setItem('user_session', session);
+    } else {
+        localStorage.removeItem('user_session_expiration');
+        localStorage.removeItem('user_session');
+    }
+
+    userSession(sessionInfos['user']);
+    return true;
+}
+
+/**
+ * Execute when login form is submitted
+ * @params {any} event
+ * @params {function} onLogged
+ * @return {void}
+ */
+export function loginUser(event, onLogged) {
+    fetch(
+        'http://localhost:8081/login/',
+        getDefaultHeaders('POST', {username: event.username, password: event.password})
+    ).then((res) => {
+        if (res.status > 200) {
+            //loginFailed({message: "AAAAAAAAAAAAAAAH !"});
+            return;
+        }
+        getJsonBody(res).then(loginBody => {
+            if(changeLoginState(loginBody, onLogged)) {
+
+            } else {
+
+            }
+        }).catch(e => {
+            console.error(e);
+        })
+    });
+}
+
+/**
+ * @param {function} onLoggedOut
+ */
+export function logout(onLoggedOut) {
+    fetch(
+        'http://localhost:8081/logout/',
+        getDefaultHeaders('GET')
+    ).then(res => {
+        if (res.status !== 200) {
+            console.error('Oupsie', res);
+            return;
+        }
+        getJsonBody(res).then(logoutBody => {
+            if (changeLoginState(logoutBody, onLoggedOut)) {
+
+            } else {
+
+            }
+        }).catch(e => {
+            console.error(e);
+        })
+    });
 }
 
 export function register(userForm) {

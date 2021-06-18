@@ -12,7 +12,7 @@ function registrationFailed() {
 }
 
 
-function RegistrationForm() {
+function RegistrationForm(props) {
     return (
         <Card>
             <Form
