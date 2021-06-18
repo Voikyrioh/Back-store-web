@@ -49,7 +49,7 @@ function changeLoginState(sessionInfos, userSession) {
 
     if (sessionInfos.expiresIn > 0) {
         const expireDate = new Date();
-        expireDate.setSeconds(expireDate.getSeconds() + 100);
+        expireDate.setSeconds(expireDate.getSeconds() + sessionInfos.expiresIn);
         const sessionExpiration = expireDate.getTime().toString(10);
         const session = JSON.stringify(sessionInfos.user);
 
