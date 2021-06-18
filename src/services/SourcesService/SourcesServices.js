@@ -1,9 +1,9 @@
+import {getDefaultHeaders} from "../NetworkService";
+
 export function getAllProductInformations() {
-    return fetch("http://localhost:8081/products/",
-        {
-            headers: {
-                "access-control-allow-origin" : "*",
-                "Content-type": "application/json; charset=UTF-8"
-            }})
+    return fetch(
+        "http://localhost:8081/products/",
+            getDefaultHeaders('GET')
+        )
         .then(response => response.json());
 }
