@@ -16,6 +16,10 @@ function RegistrationForm(props) {
     return (
         <Card>
             <Form
+                labelAlign={"right"}
+                layout={"horizontal"}
+                labelCol={{span: 10}}
+                wrapperCol={{span: 30}}
                 name="registration"
                 onFinish={registerUser}
                 onFinishFailed={registrationFailed}
@@ -53,7 +57,7 @@ function RegistrationForm(props) {
                 </Form.Item>
 
                 <Form.Item
-                    label="Confirmer votre mot de passe"
+                    label="Confirmer"
                     name="password_check"
                     hasFeedback
                     rules={[{

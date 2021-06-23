@@ -10,6 +10,7 @@ import LoginForm from "./components/Auth/LoginForm/LoginForm";
 import RegistrationForm from "./components/Auth/RegistrationForm/RegistrationForm";
 import Avatar from "antd/es/avatar/avatar";
 import {logout} from "./services/AuthService/AuthService";
+import Modal from "antd/es/modal/Modal";
 
 let title = 'STOCK FOR RETARDED'
 let routes = {
@@ -47,6 +48,7 @@ function getRandomBgColor() {
 function App(props) {
     const [selectedRoute, changeRoute] = useState(routes['homePage']);
     const [userSession, setUserSession] = useState(getUserSession());
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
 
     let menu = [
         {content: <Menu.Item key="homePage">Home</Menu.Item>, condition: () => true},
@@ -83,9 +85,7 @@ function App(props) {
             </p>
             <p>
                 Si tu souhaite accèder au contenu tu peux au choix&nbsp;
-                <Popover placement="bottom" title="Inscription" content={<RegistrationForm onLogged={setUserSession}/>} trigger="click">
-                    <a>t'enregistrer</a>
-                </Popover>
+                <a onClick={setShowRegisterModal(true)}>t'enregistrer</a>
                 &nbsp;ou&nbsp;
                 <Popover placement="bottom" title="Connexion" content={<LoginForm onLogged={setUserSession}/>} trigger="click">
                     <a>te connecter</a>
@@ -100,6 +100,15 @@ function App(props) {
 
     return (
         <Layout className="base-layout">
+            <Modal
+                title="20px to Top"
+                style={{ top: 20 }}
+                visible={showRegisterModal}
+                onOk={() => setShowRegisterModal(false)}
+                onCancel={() => setShowRegisterModal(false)}
+            >
+                <RegistrationForm onLogged={setUserSession}/>
+            </Modal>
             <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex'}}>
                 <div className="logo" style={{width: '300px', float: "left"}}>
                     <h1 style={{color: 'white', padding: 0, margin: 0}}>{title}</h1>

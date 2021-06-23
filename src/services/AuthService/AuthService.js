@@ -11,7 +11,14 @@
  * @property {UserSession} [user] - User's session informations send by API.
  */
 
+/**
+ * @typedef {Object} User
+ * @property {string} username - .
+ */
+
 import {getDefaultHeaders, getJsonBody} from "../NetworkService";
+import {notification} from "antd";
+import {AlertOutlined, SmileOutlined} from "@ant-design/icons";
 
 /**
  *
@@ -76,12 +83,20 @@ export function loginUser(event, onLogged) {
         getDefaultHeaders('POST', {username: event.username, password: event.password})
     ).then((res) => {
         if (res.status > 200) {
-            //loginFailed({message: "AAAAAAAAAAAAAAAH !"});
+            notification.error({
+                message: `une erreur es survenue, désolé`,
+                icon: <AlertOutlined />,
+                placement: "topRight"
+            })
             return;
         }
         getJsonBody(res).then(loginBody => {
             if(changeLoginState(loginBody, onLogged)) {
-
+                notification.success({
+                    message: `Salut ${event.username} !`,
+                    description: 'Tu est maintenant connecté, profite bien.',
+                    placement: "topLeft"
+                })
             } else {
 
             }
@@ -124,5 +139,14 @@ export function register(userForm) {
                 "access-control-allow-origin" : "*",
                 "Content-type": "application/json; charset=UTF-8"
             }})
+        .then(response => response.json());
+}
+
+/**
+ * @param {number} id
+ * @return {Promise<User>}
+ */
+export function getUser(id) {
+    return fetch(`http://localhost:8081/user/${id}`, getDefaultHeaders('GET'))
         .then(response => response.json());
 }
