@@ -67,6 +67,10 @@ function App(props) {
         logout(setUserSession);
     }
 
+    function showRegistrationModal(event) {
+        setShowRegisterModal(true);
+    }
+
     const loggedBlock = (
         <div className={'user-session-block logged'}>
             <Avatar className={'user-avatar'} size="large" style={{ backgroundColor: userBgColor}}>
@@ -85,7 +89,7 @@ function App(props) {
             </p>
             <p>
                 Si tu souhaite accèder au contenu tu peux au choix&nbsp;
-                <a onClick={setShowRegisterModal(true)}>t'enregistrer</a>
+                <a onClick={showRegistrationModal}>t'enregistrer</a>
                 &nbsp;ou&nbsp;
                 <Popover placement="bottom" title="Connexion" content={<LoginForm onLogged={setUserSession}/>} trigger="click">
                     <a>te connecter</a>
@@ -107,7 +111,7 @@ function App(props) {
                 onOk={() => setShowRegisterModal(false)}
                 onCancel={() => setShowRegisterModal(false)}
             >
-                <RegistrationForm onLogged={setUserSession}/>
+                <RegistrationForm show={showRegisterModal} setModal={setShowRegisterModal} onLogged={setUserSession}/>
             </Modal>
             <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex'}}>
                 <div className="logo" style={{width: '300px', float: "left"}}>
