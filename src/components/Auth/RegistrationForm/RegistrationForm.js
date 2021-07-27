@@ -1,7 +1,9 @@
 import './RegistrationForm.sass';
 import * as React from 'react';
-import {Button, Card, Form, Input} from "antd";
-import {testPassword} from "../../../services/AuthService/AuthService";
+import {Card, Form, Input} from "antd";
+import {register, testPassword} from "../../../services/AuthService/AuthService";
+import Modal from "antd/es/modal/Modal";
+import {useState} from "react";
 
 function registerUser() {
     console.log("coucou");
@@ -13,19 +15,38 @@ function registrationFailed() {
 
 
 function RegistrationForm(props) {
+    const [form] = Form.useForm();
+    const [registerLoading, setRegisterLoading] = useState(false);
+
+    const handleSubmit = (event) => {
+        setRegisterLoading(true);
+        register(
+            event,
+            (sessionInfos) => { props.onLogged(sessionInfos); setRegisterLoading(false); props.setModal(false); },
+            () => {setRegisterLoading(false);}
+        );
+    };
+
     return (
-        <Card>
+        <Modal
+            title="S'enregistrer :"
+            style={{ top: 20 }}
+            visible={props.show}
+            onOk={form.submit}
+            confirmLoading={registerLoading}
+            onCancel={() => props.setModal(false)}
+        >
             <Form
-                labelAlign={"right"}
-                layout={"horizontal"}
+                form={form}
+                layout={"vertical"}
                 labelCol={{span: 10}}
                 wrapperCol={{span: 30}}
                 name="registration"
-                onFinish={registerUser}
+                onFinish={handleSubmit}
                 onFinishFailed={registrationFailed}
             >
                 <Form.Item
-                    label="Nom d'utilisateur"
+                    label="Nom d'utilisateur :"
                     name="username"
                     rules={[{
                         required: true,
@@ -36,7 +57,7 @@ function RegistrationForm(props) {
                 </Form.Item>
 
                 <Form.Item
-                    label="Mot de passe"
+                    label="Mot de passe :"
                     name="password"
                     hasFeedback
                     rules={[{
@@ -57,8 +78,8 @@ function RegistrationForm(props) {
                 </Form.Item>
 
                 <Form.Item
-                    label="Confirmer"
-                    name="password_check"
+                    label="Confirmer le mot de passe :"
+                    name="password_confirm"
                     hasFeedback
                     rules={[{
                         required: true,
@@ -77,7 +98,7 @@ function RegistrationForm(props) {
                 </Form.Item>
 
                 <Form.Item
-                    label="Email"
+                    label="Email :"
                     name="email"
                     hasFeedback
                     rules={[{
@@ -92,7 +113,7 @@ function RegistrationForm(props) {
                 </Form.Item>
 
                 <Form.Item
-                    label="Prénom"
+                    label="Prénom :"
                     name="firstname"
                 >
                     <Input />
@@ -105,14 +126,8 @@ function RegistrationForm(props) {
                     <Input />
                 </Form.Item>
 
-                <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                        Envoyer
-                    </Button>
-                </Form.Item>
-
             </Form>
-        </Card>
+        </Modal>
     );
 }
 

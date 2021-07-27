@@ -1,3 +1,7 @@
+import {HttpMethods, httpRequest} from "../NetworkService";
+import {notification} from "antd";
+import {AlertOutlined} from "@ant-design/icons";
+
 /**
  * @typedef {Object} UserSession
  * @property {string | null} username - Define for this react app the user's username
@@ -15,10 +19,6 @@
  * @typedef {Object} User
  * @property {string} username - .
  */
-
-import {getDefaultHeaders, getJsonBody} from "../NetworkService";
-import {notification} from "antd";
-import {AlertOutlined, SmileOutlined} from "@ant-design/icons";
 
 /**
  *
@@ -74,79 +74,98 @@ function changeLoginState(sessionInfos, userSession) {
 /**
  * Execute when login form is submitted
  * @params {any} event
- * @params {function} onLogged
+ * @params {function} onLogged - callback to execute when user is logged
+ * @param {function} onError - event to play when an error occur
  * @return {void}
  */
-export function loginUser(event, onLogged) {
-    fetch(
+export function loginUser(event, onLogged, onError) {
+    httpRequest(
+        HttpMethods.post,
         'http://localhost:8081/login/',
-        getDefaultHeaders('POST', {username: event.username, password: event.password})
+        {username: event.username, password: event.password}
     ).then((res) => {
-        if (res.status > 200) {
+        if (res.error || res?.full?.status > 200 || !res?.body) {
             notification.error({
                 message: `une erreur es survenue, désolé`,
                 icon: <AlertOutlined />,
                 placement: "topRight"
-            })
+            });
+            onError();
             return;
         }
-        getJsonBody(res).then(loginBody => {
-            if(changeLoginState(loginBody, onLogged)) {
-                notification.success({
-                    message: `Salut ${event.username} !`,
-                    description: 'Tu est maintenant connecté, profite bien.',
-                    placement: "topLeft"
-                })
-            } else {
-
-            }
-        }).catch(e => {
-            console.error(e);
-        })
-    });
+        if(changeLoginState(res.body, onLogged)) {
+            notification.success({
+                message: `Salut ${event.username} !`,
+                description: 'Tu est maintenant connecté, profite bien.',
+                placement: "topLeft"
+            });
+        } else {
+            onError();
+        }
+    }).catch(e => {
+        console.error(e);
+        onError();
+    })
 }
 
 /**
- * @param {function} onLoggedOut
+ * Call logout API endpoint
+ * @param {function} onLoggedOut - event to play when user is logged out
+ * @return {void}
  */
 export function logout(onLoggedOut) {
-    fetch(
-        'http://localhost:8081/logout/',
-        getDefaultHeaders('GET')
-    ).then(res => {
-        if (res.status !== 200) {
-            console.error('Oupsie', res);
+    httpRequest(HttpMethods.get,'http://localhost:8081/logout/').then(response => {
+        if (response?.full?.status !== 200 || !response?.body) {
+            console.error('Oupsie', response);
             return;
         }
-        getJsonBody(res).then(logoutBody => {
-            if (changeLoginState(logoutBody, onLoggedOut)) {
-
-            } else {
-
-            }
-        }).catch(e => {
-            console.error(e);
-        })
-    });
-}
-
-export function register(userForm) {
-    return fetch("http://localhost:8081/signup/",
-        {
-            method: "PUT",
-            body: JSON.stringify(userForm),
-            headers: {
-                "access-control-allow-origin" : "*",
-                "Content-type": "application/json; charset=UTF-8"
-            }})
-        .then(response => response.json());
+        changeLoginState(response.body, onLoggedOut);
+    })
 }
 
 /**
+ * Call register API endpoint
+ * @param {Object} userForm - register form object
+ * @param {function} onLogged - event to play when user is logged out
+ * @param {function} onError - event to play when an error occur
+ * @return {void}
+ */
+export function register(userForm, onLogged, onError) {
+    httpRequest(HttpMethods.put, "http://localhost:8081/signup/", userForm).then(response => {
+        if (response.error || response.status > 200 || !response?.body) {
+            console.error("Cannot register : ", response?.error || response?.body);
+            notification.error({
+                message: `une erreur es survenue, désolé`,
+                icon: <AlertOutlined />,
+                placement: "topRight"
+            });
+            onError();
+            return;
+        }
+
+        if (changeLoginState(response.body, onLogged)) {
+            notification.success({
+                message: `Bienvenue ${userForm.username} !`,
+                description: 'Tu est maintenant inscrit, amuse-toi bien.',
+                placement: "topLeft"
+            });
+        } else {
+            onError();
+        }
+    }).catch(e => {
+        console.error(e);
+        onError();
+    });
+}
+
+/**
+ * Call getUser API endpoint
  * @param {number} id
- * @return {Promise<User>}
+ * @return {Object}
  */
 export function getUser(id) {
-    return fetch(`http://localhost:8081/user/${id}`, getDefaultHeaders('GET'))
-        .then(response => response.json());
+    return new Promise((resolve, reject) => {
+        httpRequest( HttpMethods.get, `http://localhost:8081/user/${id}`)
+            .then(response => resolve(response.body));
+    });
 }

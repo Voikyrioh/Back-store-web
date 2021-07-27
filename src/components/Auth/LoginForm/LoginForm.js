@@ -2,6 +2,7 @@ import './LoginForm.sass';
 import * as React from 'react';
 import {Button, Card, Form, Input, notification} from "antd";
 import {loginUser} from "../../../services/AuthService/AuthService";
+import {useState} from "react";
 
 function loginFailed(event) {
     console.log('ERROR : ', event);
@@ -13,9 +14,17 @@ function loginFailed(event) {
 }
 
 function LoginForm(props) {
+    const [loginLoading, setLoginLoading] = useState(false);
+
     const handleSubmit = (event) => {
-        loginUser(event, props.onLogged);
+        setLoginLoading(true);
+        loginUser(
+            event,
+            (sessionInfos) => {props.onLogged(sessionInfos); setLoginLoading(false);},
+            () => {setLoginLoading(false);}
+        );
     }
+
 
     return (
         <Card>
@@ -51,7 +60,7 @@ function LoginForm(props) {
                 </Form.Item>
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" loading={loginLoading}>
                         Valider
                     </Button>
                 </Form.Item>

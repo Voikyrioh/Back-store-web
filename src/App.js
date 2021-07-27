@@ -3,14 +3,13 @@ import './App.sass';
 import 'antd/dist/antd.css';
 import {SourceInfoList} from "./components/SourceInfoList/SourceInfoList";
 import {Content, Footer, Header} from "antd/es/layout/layout";
-import {Button, Layout, Menu, Popover} from "antd";
+import {Layout, Menu, Popover} from "antd";
 import {HomePage} from "./components/HomePage/HomePage";
 import {ShopsList} from "./components/ShopsList/ShopsList";
 import LoginForm from "./components/Auth/LoginForm/LoginForm";
 import RegistrationForm from "./components/Auth/RegistrationForm/RegistrationForm";
 import Avatar from "antd/es/avatar/avatar";
 import {logout} from "./services/AuthService/AuthService";
-import Modal from "antd/es/modal/Modal";
 
 let title = 'STOCK FOR RETARDED'
 let routes = {
@@ -98,21 +97,14 @@ function App(props) {
             </p>
         </div>
     );
+
     const getLogged = () => {
         return userSession?.username ? loggedBlock : unloggedBlock
     }
 
     return (
         <Layout className="base-layout">
-            <Modal
-                title="20px to Top"
-                style={{ top: 20 }}
-                visible={showRegisterModal}
-                onOk={() => setShowRegisterModal(false)}
-                onCancel={() => setShowRegisterModal(false)}
-            >
-                <RegistrationForm show={showRegisterModal} setModal={setShowRegisterModal} onLogged={setUserSession}/>
-            </Modal>
+            <RegistrationForm show={showRegisterModal} setModal={setShowRegisterModal} onLogged={setUserSession}/>
             <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex'}}>
                 <div className="logo" style={{width: '300px', float: "left"}}>
                     <h1 style={{color: 'white', padding: 0, margin: 0}}>{title}</h1>

@@ -1,9 +1,11 @@
-import {getDefaultHeaders} from "../NetworkService";
+import {HttpMethods, httpRequest} from "../NetworkService";
 
 export function getAllProductInformations() {
-    return fetch(
-        "http://localhost:8081/products/",
-            getDefaultHeaders('GET')
+    return new Promise((resolve) => {
+        httpRequest(
+            HttpMethods.get,
+            "http://localhost:8081/products/",
         )
-        .then(response => response.json());
+            .then(response => resolve(response?.body));
+    });
 }
