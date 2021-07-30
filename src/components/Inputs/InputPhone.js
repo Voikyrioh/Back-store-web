@@ -1,7 +1,13 @@
 import * as React from 'react';
-import {Avatar, Card, Form, Input, Select} from "antd";
+import {Avatar, Form, Input, Select} from "antd";
 import { countries } from 'country-flag-icons';
-import { getCountryCallingCode, isSupportedCountry, isValidNumberForRegion, getCountries } from 'libphonenumber-js';
+import {
+    getCountryCallingCode,
+    isSupportedCountry,
+    isValidNumberForRegion,
+    getCountries,
+    parsePhoneNumber
+} from 'libphonenumber-js';
 import Flags from 'country-flag-icons/react/1x1';
 import {useState} from "react";
 const { Option } = Select;
@@ -9,9 +15,9 @@ const { Option } = Select;
 export function InputPhone(props) {
     const [selectedCountry, setSelectedCountry] = useState(props.defaultCountry);
     const [inputStatus, setInputStatus] = useState('');
-    const [form] = Form.useForm();
 
-    const getCountryListOptions = () => {
+    // #region Utility functions
+    const getCountryDialOptions = () => {
         const options = [];
         const availableCountries = countries.filter(value => isSupportedCountry(value)).sort((a,b) => getCountryCallingCode(a) - getCountryCallingCode(b));
         for (const country of availableCountries) {
@@ -24,64 +30,70 @@ export function InputPhone(props) {
         }
         return options;
     }
-
     const changeCountrySelection = (value, options) => {
         setSelectedCountry(value);
-        form.validateFields(['phone']).then(value1 => {})
+        props.form.validateFields([props.name]).then(value1 => {})
     }
 
     const filterCountrySearch = (value, option) => {
         const countryCallingCode = `+${getCountryCallingCode(option.value)}`;
-        return option?.value?.includes(value) || countryCallingCode?.includes(value);
-    }
-
-    const sortCountryList = (countryA, countryB) => {
-        return getCountryCallingCode(countryA.value) - getCountryCallingCode(countryB.value);
+        return option?.value?.includes(value?.toUpperCase()) || countryCallingCode?.includes(value);
     }
 
     const checkPhoneValid = (phone) => {
-        return isValidNumberForRegion(phone, getCountries().find(c => c === selectedCountry));
+        return isValidNumberForRegion(phone, selectedCountry);
     }
+
+    const computeValue = (phone) => {
+        if (isValidNumberForRegion(phone, selectedCountry) && phone.length > 1 && typeof phone === 'string') {
+            const number = parsePhoneNumber(`${phone}`, selectedCountry);
+            return number.formatInternational();
+        } else {
+            return phone;
+        }
+
+    }
+    // #endregion
 
     const countrySelect = (
         <Select showSearch
                 style={{width: 100}}
                 onSelect={changeCountrySelection}
                 filterOption={filterCountrySearch}
-                filterSort={sortCountryList}
                 defaultValue={props.defaultCountry}
         >
-            {getCountryListOptions()}
+            {getCountryDialOptions()}
         </Select>
     );
 
     return (
-        <Card style={{width: '50%'}} >
-            <Form form={form}>
-                <Form.Item
-                    hasFeedback
-                    colon
-                    label="Numéro de téléphone"
-                    name="phone"
-                    validateStatus={inputStatus}
-                    rules={[{
-                        required: true,
-                        message: "Merci de renseigner un numéro de téléphone"
-                    }, () => ({
-                        validator(_, value) {
-                            setInputStatus('validating');
-                            if (!checkPhoneValid(value)) {
-                                setInputStatus('error');
-                                return Promise.reject("Le numéro de téléphone est incorrect");
-                            }
-                            setInputStatus('success');
-                            return Promise.resolve();
-                        }
-                    })]}
-                >
-                    <Input addonBefore={countrySelect} defaultValue={props.defaultNumber} type={'tel'}/>
-                </Form.Item>
-            </Form>
-        </Card>
+        <Form.Item
+            hasFeedback
+            colon
+            label="Numéro de téléphone"
+            name={props.name}
+            validateStatus={inputStatus}
+            normalize={computeValue}
+            rules={[() => ({
+                validator(_, value) {
+                    setInputStatus('validating');
+                    if (value.length > 0 && !checkPhoneValid(value)) {
+                        setInputStatus('error');
+                        return Promise.reject("Le numéro de téléphone est incorrect");
+                    }
+                    setInputStatus('success');
+
+                    if (value.length === 0) {
+                        setInputStatus('error');
+                    }
+                    return Promise.resolve();
+                },
+            }),{
+                required: true,
+                message: "Merci de renseigner un numéro de téléphone"
+            }]}
+        >
+            <Input addonBefore={countrySelect} defaultValue={props.defaultNumber} type={'tel'}/>
+        </Form.Item>
     );
 }

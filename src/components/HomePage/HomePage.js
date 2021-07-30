@@ -5,8 +5,15 @@ import Title from "antd/es/typography/Title";
 import Paragraph from "antd/es/typography/Paragraph";
 import Text from "antd/es/typography/Text";
 import {InputPhone} from "../Inputs/InputPhone";
+import {Button, Card, Form} from "antd";
 
 export function HomePage() {
+    const [form] = Form.useForm();
+
+    const handleSubmit = (form) => {
+        console.log(form);
+    }
+
     return (
         <Content>
             <Title>Bienvenue sur <Text type="success">Stock for Retarded</Text></Title>
@@ -22,7 +29,17 @@ export function HomePage() {
                 vérifier si un produit est en stock ou non.
             </Paragraph>
 
-            <InputPhone defaultCountry={'FR'} key={'test'}/>
+
+            <Card style={{width: '50%'}} >
+                <Form form={form} onFinish={handleSubmit}>
+                    <InputPhone defaultCountry={'FR'} form={form} name={'test-phone'} />
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            Valider
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
         </Content>
     );
 }
