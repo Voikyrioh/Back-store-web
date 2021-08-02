@@ -5,7 +5,6 @@ import {
     getCountryCallingCode,
     isSupportedCountry,
     isValidNumberForRegion,
-    getCountries,
     parsePhoneNumber
 } from 'libphonenumber-js';
 import Flags from 'country-flag-icons/react/1x1';
@@ -72,6 +71,7 @@ export function InputPhone(props) {
             colon
             label="Numéro de téléphone"
             name={props.name}
+            validateTrigger={'onBlur'}
             validateStatus={inputStatus}
             normalize={computeValue}
             rules={[() => ({
