@@ -1,15 +1,16 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import './App.sass';
 import 'antd/dist/antd.css';
 import {SourceInfoList} from "./components/SourceInfoList/SourceInfoList";
 import {Content, Footer, Header} from "antd/es/layout/layout";
-import {Layout, Menu, Popover} from "antd";
+import {Layout, Menu, Modal, Popover} from "antd";
 import {HomePage} from "./components/HomePage/HomePage";
 import {ShopsList} from "./components/ShopsList/ShopsList";
 import LoginForm from "./components/Auth/LoginForm/LoginForm";
 import RegistrationForm from "./components/Auth/RegistrationForm/RegistrationForm";
 import Avatar from "antd/es/avatar/avatar";
 import {logout} from "./services/AuthService/AuthService";
+import {InfoCircleFilled} from "@ant-design/icons";
 
 let title = 'STOCK FOR RETARDED'
 let routes = {
@@ -53,6 +54,7 @@ function App(props) {
         {content: <Menu.Item key="homePage">Home</Menu.Item>, condition: () => true},
         {content: <Menu.Item key="sourceInfoList">Sources</Menu.Item>, condition: () => userSession?.username},
         {content: <Menu.Item key="shopList">Shops</Menu.Item>, condition: () => userSession?.username},
+        {content: <Menu.Item key="shopList">Test</Menu.Item>, condition: () => userSession?.role === 'ADMINIDIOT'},
     ]
 
     let userBgColor = sessionStorage.getItem('user-background-color');
@@ -62,13 +64,53 @@ function App(props) {
         sessionStorage.setItem('user-background-color', userBgColor);
     }
 
+    let sessionTimeout = useRef(0);
+
     function logoutUser() {
         logout(setUserSession);
+        changeRoute(routes.homePage);
+        if (sessionTimeout) {
+            clearTimeout(sessionTimeout.current);
+        }
     }
 
     function showRegistrationModal(event) {
         setShowRegisterModal(true);
     }
+
+    useEffect(() => {
+        const disconnectedModal = {
+            title: <h3>⛺ Pas besoin de camper !</h3>,
+            centered: true,
+            icon: '',
+            content: <div>
+                <p>Il semblerait que tu soit resté connecté trop longtemps, nous t'avons donc déconnecté pour ta sécurité 😉</p>
+                <div style={{backgroundColor: '#e0e8ee', color: "steelblue", padding: 10}}>
+                    <InfoCircleFilled/> <b>Astuce:</b>
+                    <p style={{paddingLeft: 15, marginBottom: 0}}><i>
+                        Si ça ne te plaît pas tu peux toujours cocher la case "rester connecter" sur le formulaire de connexion comme ça tu ne sera plus embêté.
+                    </i></p>
+                </div>
+            </div>
+        }
+
+        function registerSessionStopState(time) {
+            sessionTimeout.current = setTimeout(() => {
+                changeRoute(routes.homePage);
+                setUserSession({ username: null, role: ''});
+                localStorage.removeItem('user_session_expiration');
+                localStorage.removeItem('user_session');
+                Modal.error(disconnectedModal)
+            }, time);
+        }
+
+        let sessionExpiration = localStorage.getItem('user_session_expiration')
+
+        if (sessionExpiration && !isNaN(Number.parseInt(sessionExpiration, 10))){
+            let loginExpDate = new Date(Number.parseInt(sessionExpiration, 10));
+            registerSessionStopState(loginExpDate - new Date());
+        }
+    });
 
     const loggedBlock = (
         <div className={'user-session-block logged'}>
@@ -125,7 +167,7 @@ function App(props) {
                     </Content>
                 </Layout>
             </Content>
-            <Footer style={{ textAlign: 'center' }}>Made by <a target="_blank" href="https://github.com/Voikyrioh">Voikyrioh</a> the very first retarded, dev with <a target="_blank" href="https://fr.reactjs.org/">React.js ©</a> designed with <a target="_blank" href="https://ant.design/">Ant Design ©</a></Footer>
+            <Footer style={{ textAlign: 'center' }}>Made by <a target="_blank" href="https://github.com/Voikyrioh">Voikyrioh</a> the very first retarded, developed with <a target="_blank" href="https://fr.reactjs.org/">React.js ©</a> designed with <a target="_blank" href="https://ant.design/">Ant Design ©</a></Footer>
         </Layout>
     );
 }
