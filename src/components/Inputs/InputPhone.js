@@ -77,21 +77,20 @@ export function InputPhone(props) {
             rules={[() => ({
                 validator(_, value) {
                     setInputStatus('validating');
-                    if (value.length > 0 && !checkPhoneValid(value)) {
+                    if (value?.length > 0 && !checkPhoneValid(value)) {
                         setInputStatus('error');
                         return Promise.reject("Le numéro de téléphone est incorrect");
                     }
                     setInputStatus('success');
 
-                    if (value.length === 0) {
+                    if (!value || value?.length === 0) {
                         setInputStatus('error');
+                        return Promise.reject("Merci de renseigner un numéro de téléphone")
                     }
+
                     return Promise.resolve();
                 },
-            }),{
-                required: true,
-                message: "Merci de renseigner un numéro de téléphone"
-            }]}
+            })]}
         >
             <Input addonBefore={countrySelect} defaultValue={props.defaultNumber} type={'tel'}/>
         </Form.Item>

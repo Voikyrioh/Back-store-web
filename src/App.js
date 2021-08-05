@@ -11,12 +11,14 @@ import RegistrationForm from "./components/Auth/RegistrationForm/RegistrationFor
 import Avatar from "antd/es/avatar/avatar";
 import {logout} from "./services/AuthService/AuthService";
 import {InfoCircleFilled} from "@ant-design/icons";
+import {Administration} from "./components/Admin/Administration";
 
 let title = 'STOCK FOR RETARDED'
 let routes = {
     homePage: <HomePage />,
     sourceInfoList: <SourceInfoList />,
     shopList: <ShopsList />,
+    admin: <Administration />,
     login: <LoginForm />,
     register: <RegistrationForm />
 }
@@ -54,7 +56,7 @@ function App(props) {
         {content: <Menu.Item key="homePage">Home</Menu.Item>, condition: () => true},
         {content: <Menu.Item key="sourceInfoList">Sources</Menu.Item>, condition: () => userSession?.username},
         {content: <Menu.Item key="shopList">Shops</Menu.Item>, condition: () => userSession?.username},
-        {content: <Menu.Item key="shopList">Test</Menu.Item>, condition: () => userSession?.role === 'ADMINIDIOT'},
+        {content: <Menu.Item key="admin">Administration</Menu.Item>, condition: () => userSession?.role === 'ADMINIDIOT'},
     ]
 
     let userBgColor = sessionStorage.getItem('user-background-color');
@@ -110,7 +112,7 @@ function App(props) {
             let loginExpDate = new Date(Number.parseInt(sessionExpiration, 10));
             registerSessionStopState(loginExpDate - new Date());
         }
-    });
+    }, [userSession, sessionTimeout]);
 
     const loggedBlock = (
         <div className={'user-session-block logged'}>
