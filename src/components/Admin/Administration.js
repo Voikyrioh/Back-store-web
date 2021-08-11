@@ -3,9 +3,21 @@ import {Button, Drawer, Menu, Tooltip} from "antd";
 import {BarChartOutlined, DesktopOutlined, MenuFoldOutlined, ShopOutlined, UserOutlined} from "@ant-design/icons";
 import "./Administration.sass"
 import {UserList} from "./UserList/UserList";
+import {ItemList} from "./ItemList/ItemList";
+import {ShopList} from "./ShopList/ShopList";
+import {Stats} from "./Stats/Stats";
 
 export function Administration() {
+    const routes = {
+        users: <UserList/>,
+        products: <ItemList/>,
+        shops: <ShopList/>,
+        stats: <Stats/>,
+    }
+
     const [visible, setVisibility] = useState(false)
+    const [selectedRoute, setSelectedRoute] = useState('users')
+    const [adminRoute, setAdminRoute] = useState(routes['users'])
 
     return <div>
         <Tooltip title={"Afficher le menu"}>
@@ -24,7 +36,15 @@ export function Administration() {
             getContainer={false}
             className="admin-drawer"
         >
-            <Menu theme={'dark'} mode={'vertical'} className="admin-menu" activeKey={'users'} selectedKeys={['user']}>
+            <Menu
+                theme={'dark'}
+                mode={'vertical'}
+                className="admin-menu"
+                activeKey={selectedRoute}
+                selectedKeys={[selectedRoute]}
+                onSelect={(selection) => { setAdminRoute(routes[selection.selectedKeys[0]]); setSelectedRoute(selection.selectedKeys[0]) }}
+
+            >
                 <Menu.Item key="users" icon={<UserOutlined />}>
                     Gérer les utilisateurs
                 </Menu.Item>
@@ -40,7 +60,7 @@ export function Administration() {
             </Menu>
         </Drawer>
         <div>
-            <UserList/>
+            {adminRoute}
         </div>
     </div>
 }

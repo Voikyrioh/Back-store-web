@@ -1,12 +1,19 @@
-import React, {useState, useEffect} from "react"
-import {Table} from "antd";
-import {getAllUsers} from "../../../services/UsersService/UsersService";
+import React, {useState, useEffect, useReducer} from "react"
+import {Button, Table, Tooltip} from "antd";
+import {getAllUsers, renderUserRoleTag} from "../../../services/UsersService/UsersService";
+import {userListActions, userListDefaultState, userListReducer} from "./userListActions";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 
 export function UserList() {
-    const [userList, setUserList] = useState(null);
+    const [userList, userListDispatch] = useReducer(userListReducer, userListDefaultState());
     const [userListRequest, setUserListRequest] = useState(null);
-    const [listSpinner, setListSpinner] = useState(true);
     const [errors, setErrors] = useState(null);
+
+
+    const userEditTooltip =
+        <Tooltip>
+            {/*userListDispatch({type: userListActions.EDIT, id: userId}) })*/ 'test'}
+        </Tooltip>
 
     const columns = [
         {
@@ -38,6 +45,28 @@ export function UserList() {
             title: "Rôle",
             dataIndex: "role",
             key: "role",
+            render: renderUserRoleTag
+        },
+        {
+            title: "Actions",
+            dataIndex: "id",
+            key: "actions",
+            render: (userId) => {
+                return <>
+                    <Button
+                        type={'danger'}
+                        shape={'circle'}
+                        icon={<DeleteOutlined/>}
+                        onClick={() => { userListDispatch({type: userListActions.REMOVE, id: userId}) }}
+                    />
+                    <Button
+                        type={'primary'}
+                        shape={'circle'}
+                        icon={<EditOutlined/>}
+                        onClick={() => {}}
+                    />
+                </>
+            }
         },
     ];
 
@@ -45,21 +74,20 @@ export function UserList() {
         if (!userListRequest) {
             setUserListRequest(
                 getAllUsers().then(users => {
-                    console.log(users);
                     users.map(user => { user.key = user.id; return user; });
-                    setUserList(users);
-                    setListSpinner(false);
+                    userListDispatch({type: userListActions.FINISHED, payload: users});
                 }).catch(error => {
                     setErrors(error);
-                    setListSpinner(false);
                 })
             );
         }
-    }, [userListRequest, listSpinner]);
+    }, [userListRequest]);
 
-    return <Table
-        columns={columns}
-        dataSource={userList ? userList : null}
-        loading={listSpinner}
-    />;
+    return (
+        <Table
+            columns={columns}
+            dataSource={(userList?.users?.length > 0) ? userList.users : null}
+            loading={userList?.loading}
+        />
+    );
 }

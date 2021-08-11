@@ -1,4 +1,15 @@
 import {HttpMethods, httpRequest} from "../NetworkService";
+import {Tag} from "antd";
+
+const userRolesColors = {
+    "RETARDED": "blue",
+    "MORONDERATOR": "purple",
+    "ADMINIDIOT": "red"
+}
+
+export function renderUserRoleTag(role) {
+    return <Tag color={userRolesColors[role] ?? '#ffffff'}>{role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()}</Tag>
+}
 
 export function getAllUsers() {
     return new Promise((resolve) => {
