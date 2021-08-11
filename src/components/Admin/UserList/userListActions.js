@@ -18,7 +18,15 @@ export function userListReducer(state, action) {
         case userListActions.BAN:
             break;
         case userListActions.EDIT:
-            break;
+            return  {...state,
+                users: state?.users?.map(
+                    (user) => {
+                        if (user.id === action.id) {
+                            return {...user, ...action.payload};
+                        }
+                        return user;
+                    })
+                }
         case userListActions.FINISHED:
             if (!action.payload || !Array.isArray(action.payload) ) {
                 throw new Error();
