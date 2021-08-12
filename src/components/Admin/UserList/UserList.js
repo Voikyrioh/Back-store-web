@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useReducer} from "react"
-import {Alert, Button, Form, Modal, Popover, Result, Table, Tooltip} from "antd";
+import {Alert, Button, Form, Modal, Popconfirm, Popover, Result, Table, Tooltip} from "antd";
 import {getAllUsers, renderUserRoleTag, updateUser} from "../../../services/UsersService/UsersService";
 import {userListActions, userListDefaultState, userListReducer} from "./userListActions";
-import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, StopOutlined} from "@ant-design/icons";
 import {UserForm} from "../../Users/UserForm";
 import './UserList.sass'
 
@@ -114,12 +114,31 @@ export function UserList() {
             render: (userId) => {
                 return <div className={'userActions'}>
                     <Tooltip title={'Supprimer'}>
-                        <Button
-                            type={'danger'}
-                            shape={'circle'}
-                            icon={<DeleteOutlined/>}
-                            onClick={() => { userListDispatch({type: userListActions.REMOVE, id: userId}) }}
-                        />
+                        <Popconfirm
+                            title={"Supprimer l'utilisateur ?"}
+                            onConfirm={
+                                () => {
+                                    userListDispatch({type: userListActions.REMOVE, id: userId}) }
+                                }
+                            okText={"Oui"}
+                            cancelText={"Nope"}
+                        >
+                            <Button type={'danger'} shape={'circle'} icon={<DeleteOutlined/>}/>
+                        </Popconfirm>
+                    </Tooltip>
+
+                    <Tooltip title={'Bannir'}>
+                        <Popconfirm
+                            title={"Bannir l'utilisateur ?"}
+                            onConfirm={
+                                () => {
+                                    userListDispatch({type: userListActions.REMOVE, id: userId}) }
+                            }
+                            okText={"Oui"}
+                            cancelText={"Nope"}
+                        >
+                            <Button type={'danger'} shape={"circle"} icon={<StopOutlined/>}/>
+                        </Popconfirm>
                     </Tooltip>
 
                     <Tooltip title={'Modifier'}>
@@ -134,7 +153,7 @@ export function UserList() {
         if (!userListRequest) {
             setUserListRequest(
                 getAllUsers().then(users => {
-                    users.map(user => { user.key = user.id; return user; });
+                    users?.map(user => { user.key = user.id; return user; });
                     userListDispatch({type: userListActions.FINISHED, payload: users});
                 }).catch(error => {
                     setErrors(error);
@@ -161,12 +180,10 @@ export function UserList() {
     }, [errors])
 
     return (
-        <>
-            <Table
-                columns={columns}
-                dataSource={(userList?.users?.length > 0) ? userList.users : null}
-                loading={userList?.loading}
-            />
-        </>
+        <Table
+            columns={columns}
+            dataSource={(userList?.users?.length > 0) ? userList.users : null}
+            loading={userList?.loading}
+        />
     );
 }
