@@ -20,3 +20,18 @@ export function getAllUsers() {
             .then(response => resolve(response?.body));
     });
 }
+
+export function updateUser(user) {
+    if (!user || !user.id) {
+        throw new Error();
+    }
+
+    return new Promise((resolve) => {
+        httpRequest(
+            HttpMethods.put,
+            "http://localhost:8081/user/update",
+            {...user}
+        )
+            .then(response => resolve(response));
+    });
+}

@@ -24,16 +24,16 @@ export function UserForm(props) {
                 <Input placeholder={'Pseudonyme'} />
             </Form.Item>
 
-            <Form.Item label="Mot de passe :" required>
+            <Form.Item label="Mot de passe :" required={props.passwordRequired ?? true}>
                 <Input.Group compact>
                     <Form.Item
                         name="password"
                         hasFeedback
                         noStyle
                         rules={[{
-                            required: true,
+                            required: props.passwordRequired ?? true,
                             message: "Merci d'entrer un mot de passe"
-                        },
+                            },
                             () => ({
                                 validator(_, value) {
                                     const passwordTestedResponse = testPassword(value);
@@ -42,7 +42,8 @@ export function UserForm(props) {
                                     }
                                     return Promise.reject(passwordTestedResponse);
                                 }
-                            })]}
+                            })
+                        ]}
                     >
                         <Input.Password placeholder={'Mot de passe'} style={{ width: '50%' }}/>
                     </Form.Item>
@@ -52,7 +53,7 @@ export function UserForm(props) {
                         hasFeedback
                         noStyle
                         rules={[{
-                            required: true,
+                            required: props.passwordRequired ?? true,
                             message: "Merci confirmer votre mot de passe"
                         },
                             ({ getFieldValue }) => ({
@@ -85,7 +86,7 @@ export function UserForm(props) {
             </Form.Item>
 
             <Form.Item
-                label="Prénom :"
+                label="Prénom "
                 name="firstname"
                 style={{width: 'calc(50% - 5px)', float: 'left'}}
             >

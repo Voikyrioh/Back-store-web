@@ -1,19 +1,79 @@
 import React, {useState, useEffect, useReducer} from "react"
-import {Button, Table, Tooltip} from "antd";
-import {getAllUsers, renderUserRoleTag} from "../../../services/UsersService/UsersService";
+import {Alert, Button, Form, Modal, Popover, Result, Table, Tooltip} from "antd";
+import {getAllUsers, renderUserRoleTag, updateUser} from "../../../services/UsersService/UsersService";
 import {userListActions, userListDefaultState, userListReducer} from "./userListActions";
 import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {UserForm} from "../../Users/UserForm";
+import './UserList.sass'
 
 export function UserList() {
     const [userList, userListDispatch] = useReducer(userListReducer, userListDefaultState());
     const [userListRequest, setUserListRequest] = useState(null);
     const [errors, setErrors] = useState(null);
+    const [userEditPopover, showUserEditPopover] = useState(null);
+    const [form] = Form.useForm();
 
+    function editUser(user) {
+        updateUser(user).then(updateResponse => {
+            if (updateResponse?.full?.status > 200 || !updateResponse?.body) {
+                setErrors(updateResponse?.full?.statusText);
+                showUserEditPopover(null);
+                return;
+            }
 
-    const userEditTooltip =
-        <Tooltip>
-            {/*userListDispatch({type: userListActions.EDIT, id: userId}) })*/ 'test'}
-        </Tooltip>
+            userListDispatch({type: userListActions.EDIT, id: user.id, payload: updateResponse.body});
+            Modal.info({
+                icon: null,
+                centered: true,
+                visible: true,
+                content: (
+                    <Result
+                        status="success"
+                        title={"C'est fait"}
+                        subTitle={"L'utilisateur " + user.username + " a bien été modifié !"}
+                    />
+                )
+            });
+            showUserEditPopover(null);
+        });
+    }
+
+    function createUserEditPopOver (userId) {
+        const user = userList.users?.find(user => user.id === userId);
+        return (
+            <Popover
+                trigger={'click'}
+                visible={userEditPopover === user.id}
+                title={'Modification de ' + user.username}
+                content={
+                    <>
+                        <UserForm
+                            form={form}
+                            passwordRequired={false}
+                            name={user.username + '-edit'}
+                            handleSubmit={(formResult) => {
+                                editUser({id: user.id ,...formResult, 'password_confirm': undefined});
+                            }}
+                        />
+
+                        <Button type={'primary'} style={{marginRight: 15}} onClick={() => {form.submit()}}>Valider</Button>
+                        <Button type={'danger'} onClick={() => {showUserEditPopover(null)}}>Annuler</Button>
+                    </>
+                }
+            >
+                <Button
+                    type={'primary'}
+                    shape={'circle'}
+                    icon={<EditOutlined/>}
+                    onClick={() => {
+                        form.resetFields();
+                        form.setFieldsValue(user);
+                        showUserEditPopover(user.id);
+                    }}
+                />
+            </Popover>
+        )
+    }
 
     const columns = [
         {
@@ -52,20 +112,20 @@ export function UserList() {
             dataIndex: "id",
             key: "actions",
             render: (userId) => {
-                return <>
-                    <Button
-                        type={'danger'}
-                        shape={'circle'}
-                        icon={<DeleteOutlined/>}
-                        onClick={() => { userListDispatch({type: userListActions.REMOVE, id: userId}) }}
-                    />
-                    <Button
-                        type={'primary'}
-                        shape={'circle'}
-                        icon={<EditOutlined/>}
-                        onClick={() => {}}
-                    />
-                </>
+                return <div className={'userActions'}>
+                    <Tooltip title={'Supprimer'}>
+                        <Button
+                            type={'danger'}
+                            shape={'circle'}
+                            icon={<DeleteOutlined/>}
+                            onClick={() => { userListDispatch({type: userListActions.REMOVE, id: userId}) }}
+                        />
+                    </Tooltip>
+
+                    <Tooltip title={'Modifier'}>
+                        {createUserEditPopOver(userId)}
+                    </Tooltip>
+                </div>
             }
         },
     ];
@@ -83,11 +143,30 @@ export function UserList() {
         }
     }, [userListRequest]);
 
+    useEffect(() => {
+        if (errors) {
+            Modal.error({
+                icon: null,
+                centered: true,
+                visible: true,
+                content: (
+                    <Result
+                        status="error"
+                        title={"Oupsie !"}
+                        subTitle={`Une erreur est survenue : "${errors}"`}
+                    />
+                )
+            });
+        }
+    }, [errors])
+
     return (
-        <Table
-            columns={columns}
-            dataSource={(userList?.users?.length > 0) ? userList.users : null}
-            loading={userList?.loading}
-        />
+        <>
+            <Table
+                columns={columns}
+                dataSource={(userList?.users?.length > 0) ? userList.users : null}
+                loading={userList?.loading}
+            />
+        </>
     );
 }
