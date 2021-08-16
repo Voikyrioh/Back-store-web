@@ -3711,6 +3711,11 @@ cosmiconfig@^7.0.0:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
+country-flag-icons@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/country-flag-icons/-/country-flag-icons-1.4.0.tgz#68a55441dbe98a7f028d4b00c1dfef3b9f83b7cd"
+  integrity sha512-tIeh/IZbm3G7O1ocNuEckmd1jkABkJzCPhQm+rBgJXkz1L+lKfwVY/rAy+ih06zGD4kagrZ+1eOndga09y8UHw==
+
 create-ecdh@^4.0.0:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.4.tgz#d6e7f4bffa66736085a0762fd3a632684dabcc4e"
@@ -7113,6 +7118,11 @@ levn@~0.3.0:
   dependencies:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
+
+libphonenumber-js@^1.9.22:
+  version "1.9.22"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.9.22.tgz#b6b460603dedbd58f2d71f15500f216d70850fad"
+  integrity sha512-nE0aF0wrNq09ewF36s9FVqRW73hmpw6cobVDlbexmsu1432LEfuN24BCudNuRx4t2rElSeK/N0JbedzRW/TC4A==
 
 lines-and-columns@^1.1.6:
   version "1.1.6"
