@@ -1,27 +1,23 @@
 import React, {useState, useEffect, useRef} from 'react';
 import './App.sass';
 import 'antd/dist/antd.css';
-import {SourceInfoList} from "./components/SourceInfoList/SourceInfoList";
 import {Content, Footer, Header} from "antd/es/layout/layout";
 import {Layout, Menu, Modal, Popover} from "antd";
-import {HomePage} from "./components/HomePage/HomePage";
-import {ShopsList} from "./components/ShopsList/ShopsList";
 import LoginForm from "./components/Auth/LoginForm/LoginForm";
 import RegistrationForm from "./components/Auth/RegistrationForm/RegistrationForm";
 import Avatar from "antd/es/avatar/avatar";
 import {logout} from "./services/AuthService/AuthService";
-import {InfoCircleFilled} from "@ant-design/icons";
-import {Administration} from "./components/Admin/Administration";
+import {
+    Switch,
+    Route,
+    Link,
+    useLocation, useHistory
+} from "react-router-dom";
+import {getRandomBgColor} from "./services/Tools/Utils";
+import {Routes} from "./services/Routes";
+import UserSessionTimeoutModal from "./components/Modals/UserSessionTimeoutModal";
 
 let title = 'STOCK FOR RETARDED'
-let routes = {
-    homePage: <HomePage />,
-    sourceInfoList: <SourceInfoList />,
-    shopList: <ShopsList />,
-    admin: <Administration />,
-    login: <LoginForm />,
-    register: <RegistrationForm />
-}
 /**
  * Get user session in local storage and validate if session is still valid.
  * @return {UserSession}
@@ -42,77 +38,14 @@ function getUserSession() {
     }
 }
 
-function getRandomBgColor() {
-    let code = Math.random().toString(36).replace(/[^0-9a-f]+/g, 'f').substr(0, 6);
-    return`#${code}`;
-}
-
 function App(props) {
-    const [selectedRoute, changeRoute] = useState(routes['homePage']);
     const [userSession, setUserSession] = useState(getUserSession());
     const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-    let menu = [
-        {content: <Menu.Item key="homePage">Home</Menu.Item>, condition: () => true},
-        {content: <Menu.Item key="sourceInfoList">Sources</Menu.Item>, condition: () => userSession?.username},
-        {content: <Menu.Item key="shopList">Shops</Menu.Item>, condition: () => userSession?.username},
-        {content: <Menu.Item key="admin">Administration</Menu.Item>, condition: () => userSession?.role === 'ADMINIDIOT'},
-    ]
+    let location = useLocation();
+    let history = useHistory();
 
     let userBgColor = sessionStorage.getItem('user-background-color');
-
-    if (!userBgColor) {
-        userBgColor = getRandomBgColor();
-        sessionStorage.setItem('user-background-color', userBgColor);
-    }
-
-    let sessionTimeout = useRef(0);
-
-    function logoutUser() {
-        logout(setUserSession);
-        changeRoute(routes.homePage);
-        if (sessionTimeout) {
-            clearTimeout(sessionTimeout.current);
-        }
-    }
-
-    function showRegistrationModal(event) {
-        setShowRegisterModal(true);
-    }
-
-    useEffect(() => {
-        const disconnectedModal = {
-            title: <h3>⛺ Pas besoin de camper !</h3>,
-            centered: true,
-            icon: '',
-            content: <div>
-                <p>Il semblerait que tu soit resté connecté trop longtemps, nous t'avons donc déconnecté pour ta sécurité 😉</p>
-                <div style={{backgroundColor: '#e0e8ee', color: "steelblue", padding: 10}}>
-                    <InfoCircleFilled/> <b>Astuce:</b>
-                    <p style={{paddingLeft: 15, marginBottom: 0}}><i>
-                        Si ça ne te plaît pas tu peux toujours cocher la case "rester connecter" sur le formulaire de connexion comme ça tu ne sera plus embêté.
-                    </i></p>
-                </div>
-            </div>
-        }
-
-        function registerSessionStopState(time) {
-            sessionTimeout.current = setTimeout(() => {
-                changeRoute(routes.homePage);
-                setUserSession({ username: null, role: ''});
-                localStorage.removeItem('user_session_expiration');
-                localStorage.removeItem('user_session');
-                Modal.error(disconnectedModal)
-            }, time);
-        }
-
-        let sessionExpiration = localStorage.getItem('user_session_expiration')
-
-        if (sessionExpiration && !isNaN(Number.parseInt(sessionExpiration, 10))){
-            let loginExpDate = new Date(Number.parseInt(sessionExpiration, 10));
-            registerSessionStopState(loginExpDate - new Date());
-        }
-    }, [userSession, sessionTimeout]);
 
     const loggedBlock = (
         <div className={'user-session-block logged'}>
@@ -125,6 +58,7 @@ function App(props) {
             </div>
         </div>
     );
+
     const unloggedBlock = (
         <div className={'user-session-block'}>
             <p>
@@ -142,9 +76,54 @@ function App(props) {
         </div>
     );
 
-    const getLogged = () => {
+    if (!userBgColor) {
+        userBgColor = getRandomBgColor();
+        sessionStorage.setItem('user-background-color', userBgColor);
+    }
+
+    let sessionTimeout = useRef(0);
+
+    function logoutUser() {
+        logout(setUserSession);
+        history?.push('/home')
+        if (sessionTimeout) {
+            clearTimeout(sessionTimeout.current);
+        }
+    }
+
+    function getLogged() {
         return userSession?.username ? loggedBlock : unloggedBlock
     }
+
+    function showRegistrationModal(event) {
+        setShowRegisterModal(true);
+    }
+
+    React.useEffect(() => {
+        const current = Routes.find(route => route.url === '/' + location?.pathname.split('/')[1]);
+        if (!current || !current?.condition(userSession)) {
+            history.push('/home')
+        }
+    }, [location]);
+
+    useEffect(() => {
+        function registerSessionStopState(time) {
+            sessionTimeout.current = setTimeout(() => {
+                history?.push('/home');
+                setUserSession({ username: null, role: ''});
+                localStorage.removeItem('user_session_expiration');
+                localStorage.removeItem('user_session');
+                Modal.error(UserSessionTimeoutModal);
+            }, time);
+        }
+
+        let sessionExpiration = localStorage.getItem('user_session_expiration')
+
+        if (sessionExpiration && !isNaN(Number.parseInt(sessionExpiration, 10))){
+            let loginExpDate = new Date(Number.parseInt(sessionExpiration, 10));
+            registerSessionStopState(loginExpDate - new Date());
+        }
+    }, [userSession, sessionTimeout]);
 
     return (
         <Layout className="base-layout">
@@ -155,17 +134,19 @@ function App(props) {
                 </div>
                 <Menu theme="dark" mode="horizontal"
                       defaultSelectedKeys={['0']}
-                      onSelect={(event) => {
-                          changeRoute(routes[event?.selectedKeys[0]]);
-                      }}>
-                    { menu.map(item => (item.condition()) ? (item.content) : null) }
+                      activeKey={location?.pathname}
+                      selectedKeys={[location?.pathname]}
+                >
+                        {Routes?.filter(route => route.condition(userSession)? route : null).map(route => {return <Menu.Item key={route.url}><Link to={route.url}>{route.name}</Link></Menu.Item>})}
                 </Menu>
                 {getLogged()}
             </Header>
             <Content className="base-content">
                 <Layout className="site-layout-background">
                     <Content className="main-content">
-                        {selectedRoute}
+                        <Switch>
+                            {Routes?.filter(route => route.condition(userSession)? route : null).map(route => {return <Route path={route.url}>{route.component}</Route>})}
+                        </Switch>
                     </Content>
                 </Layout>
             </Content>

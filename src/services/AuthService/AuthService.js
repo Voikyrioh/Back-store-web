@@ -30,7 +30,7 @@ export function testPassword(password) {
         return null;
     }
 
-    // Password Should contain a least : 
+    // Password Should contain a least :
     // eight characters
     if (password.length < 8) {
         return 'Le mot de passe est trop court';

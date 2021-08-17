@@ -52,7 +52,7 @@ export function UserList() {
                             passwordRequired={false}
                             name={user.username + '-edit'}
                             handleSubmit={(formResult) => {
-                                editUser({id: user.id ,...formResult, 'password_confirm': undefined});
+                                editUser({id: user.id ,...formResult});
                             }}
                         />
 
