@@ -52,7 +52,7 @@ export function SourceInfoList () {
             setProductListRequest(
                 getAllProductInformations().then(sources => {
                     setListSpinner(false);
-                    setProductList(sources);
+                    setProductList(sources.map(source => {return {...source, key: source.id}}));
                 }).catch(error => {
                     setListSpinner(false);
                     setError(error);
