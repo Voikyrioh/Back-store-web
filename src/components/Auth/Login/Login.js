@@ -1,11 +1,10 @@
-import './LoginForm.sass';
+import './Login.sass';
 import * as React from 'react';
 import {Button, Card, Form, Input, notification} from "antd";
 import {loginUser} from "../../../services/AuthService/AuthService";
 import {useState} from "react";
 
 function loginFailed(event) {
-    console.log('ERROR : ', event);
     notification['error']({
         message: 'Formulaire incomplet',
         description:
@@ -13,7 +12,7 @@ function loginFailed(event) {
     });
 }
 
-function LoginForm(props) {
+function Login(props) {
     const [loginLoading, setLoginLoading] = useState(false);
 
     const handleSubmit = (event) => {
@@ -70,4 +69,4 @@ function LoginForm(props) {
     );
 }
 
-export default LoginForm;
+export default Login;

@@ -1,21 +1,21 @@
-import './RegistrationForm.sass';
+import './RegistrationModal.sass';
 import * as React from 'react';
-import {Form} from "antd";
+import {Form, notification} from "antd";
 import {register} from "../../../services/AuthService/AuthService";
 import Modal from "antd/es/modal/Modal";
 import {useState} from "react";
 import {UserForm} from "../../Users/UserForm";
 
-function registerUser() {
-    console.log("coucou");
-}
-
 function registrationFailed() {
-    console.log("holà");
+    notification['error']({
+        message: 'Formulaire incomplet',
+        description:
+            'Merci de renseigner correctement tous les champs.',
+    });
 }
 
 
-function RegistrationForm(props) {
+function RegistrationModal(props) {
     const [form] = Form.useForm();
     const [registerLoading, setRegisterLoading] = useState(false);
 
@@ -42,4 +42,4 @@ function RegistrationForm(props) {
     );
 }
 
-export default RegistrationForm;
+export default RegistrationModal;

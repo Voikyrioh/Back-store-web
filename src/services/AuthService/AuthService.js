@@ -1,6 +1,7 @@
 import {HttpMethods, httpRequest} from "../NetworkService";
 import {notification} from "antd";
 import {AlertOutlined} from "@ant-design/icons";
+import React from 'react';
 
 /**
  * @typedef {Object} UserSession
@@ -70,6 +71,8 @@ function changeLoginState(sessionInfos, userSession) {
     userSession(sessionInfos['user']);
     return true;
 }
+
+export const UserSessionContext = React.createContext(null);
 
 /**
  * Execute when login form is submitted

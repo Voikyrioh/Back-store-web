@@ -1,23 +1,25 @@
 import React, {useState} from 'react';
 import {Button, Drawer, Menu, Tooltip} from "antd";
-import {BarChartOutlined, DesktopOutlined, MenuFoldOutlined, ShopOutlined, UserOutlined} from "@ant-design/icons";
+import {MenuFoldOutlined} from "@ant-design/icons";
 import "./Administration.sass"
-import {UserList} from "./UserList/UserList";
-import {ItemList} from "./ItemList/ItemList";
-import {ShopList} from "./ShopList/ShopList";
-import {Stats} from "./Stats/Stats";
+import {Link, Route, Switch, useHistory, useLocation} from "react-router-dom";
+import {Routes} from "../../services/Routes";
 
 export function Administration() {
-    const routes = {
-        users: <UserList/>,
-        products: <ItemList/>,
-        shops: <ShopList/>,
-        stats: <Stats/>,
-    }
-
     const [visible, setVisibility] = useState(false)
-    const [selectedRoute, setSelectedRoute] = useState('users')
-    const [adminRoute, setAdminRoute] = useState(routes['users'])
+
+    let location = useLocation();
+    let history = useHistory();
+    const adminRoute = Routes.find(route => route.name === 'Administration');
+
+    React.useEffect(() => {
+        const current = adminRoute.routes.find(route => route.url === '/' + location?.pathname.split('/')[2]);
+        if (!current && location?.pathname === adminRoute.url && adminRoute.routes) {
+            history.push(adminRoute.url + adminRoute.routes[0]?.url);
+        } else if (!current) {
+            history.push('/home');
+        }
+    }, [location]);
 
     return <div>
         <Tooltip title={"Afficher le menu"}>
@@ -40,27 +42,22 @@ export function Administration() {
                 theme={'dark'}
                 mode={'vertical'}
                 className="admin-menu"
-                activeKey={selectedRoute}
-                selectedKeys={[selectedRoute]}
-                onSelect={(selection) => { setAdminRoute(routes[selection.selectedKeys[0]]); setSelectedRoute(selection.selectedKeys[0]) }}
-
+                activeKey={location?.pathname}
+                selectedKeys={[location?.pathname]}
             >
-                <Menu.Item key="users" icon={<UserOutlined />}>
-                    Gérer les utilisateurs
-                </Menu.Item>
-                <Menu.Item key="products" icon={<DesktopOutlined />}>
-                    Modifier les articles
-                </Menu.Item>
-                <Menu.Item key="shops" icon={<ShopOutlined />}>
-                    Modifier les magasins
-                </Menu.Item>
-                <Menu.Item key="stats" icon={<BarChartOutlined />}>
-                    Statistiques
-                </Menu.Item>
+                {
+                    Routes.find(route => route.name === 'Administration').routes?.map(route =>
+                        <Menu.Item key={adminRoute.url + route.url} icon={route.icon}>
+                            <Link to={adminRoute.url + route.url}>
+                                {route.name}
+                            </Link>
+                        </Menu.Item>
+                    )
+                }
             </Menu>
         </Drawer>
-        <div>
-            {adminRoute}
-        </div>
+        <Switch>
+            {Routes.find(route => route.name === 'Administration').routes?.map(route => {return <Route path={adminRoute.url + route.url}>{route.component}</Route>})}
+        </Switch>
     </div>
 }

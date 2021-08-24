@@ -3,15 +3,16 @@ import './App.sass';
 import 'antd/dist/antd.css';
 import {Content, Footer, Header} from "antd/es/layout/layout";
 import {Layout, Menu, Modal, Popover} from "antd";
-import LoginForm from "./components/Auth/LoginForm/LoginForm";
-import RegistrationForm from "./components/Auth/RegistrationForm/RegistrationForm";
+import Login from "./components/Auth/Login/Login";
+import RegistrationModal from "./components/Auth/Registration/RegistrationModal";
 import Avatar from "antd/es/avatar/avatar";
-import {logout} from "./services/AuthService/AuthService";
+import {logout, UserSessionContext} from "./services/AuthService/AuthService";
 import {
     Switch,
     Route,
     Link,
-    useLocation, useHistory
+    useLocation,
+    useHistory
 } from "react-router-dom";
 import {getRandomBgColor} from "./services/Tools/Utils";
 import {Routes} from "./services/Routes";
@@ -53,7 +54,7 @@ function App(props) {
                 {userSession?.username?.toUpperCase().charAt(0)}
             </Avatar>
             <div className={'user-infos'}>
-                <p>Salut <a>{userSession?.username}</a> !</p>
+                <p>Salut <Link to={'/account'}>{userSession?.username}</Link> !</p>
                 <p>Ce n'est pas toi ? <a onClick={logoutUser}>Déconnexion</a>.</p>
             </div>
         </div>
@@ -68,7 +69,7 @@ function App(props) {
                 Si tu souhaite accèder au contenu tu peux au choix&nbsp;
                 <a onClick={showRegistrationModal}>t'enregistrer</a>
                 &nbsp;ou&nbsp;
-                <Popover placement="bottom" title="Connexion" content={<LoginForm onLogged={setUserSession}/>} trigger="click">
+                <Popover placement="bottom" title="Connexion" content={<Login onLogged={setUserSession}/>} trigger="click">
                     <a>te connecter</a>
                 </Popover>
                 .
@@ -89,10 +90,6 @@ function App(props) {
         if (sessionTimeout) {
             clearTimeout(sessionTimeout.current);
         }
-    }
-
-    function getLogged() {
-        return userSession?.username ? loggedBlock : unloggedBlock
     }
 
     function showRegistrationModal(event) {
@@ -127,30 +124,32 @@ function App(props) {
 
     return (
         <Layout className="base-layout">
-            <RegistrationForm show={showRegisterModal} setModal={setShowRegisterModal} onLogged={setUserSession}/>
-            <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex'}}>
-                <div className="logo" style={{width: '300px', float: "left"}}>
-                    <h1 style={{color: 'white', padding: 0, margin: 0}}>{title}</h1>
-                </div>
-                <Menu theme="dark" mode="horizontal"
-                      defaultSelectedKeys={['0']}
-                      activeKey={location?.pathname}
-                      selectedKeys={[location?.pathname]}
-                >
-                        {Routes?.filter(route => route.condition(userSession)? route : null).map(route => {return <Menu.Item key={route.url}><Link to={route.url}>{route.name}</Link></Menu.Item>})}
-                </Menu>
-                {getLogged()}
-            </Header>
-            <Content className="base-content">
-                <Layout className="site-layout-background">
-                    <Content className="main-content">
-                        <Switch>
-                            {Routes?.filter(route => route.condition(userSession)? route : null).map(route => {return <Route path={route.url}>{route.component}</Route>})}
-                        </Switch>
-                    </Content>
-                </Layout>
-            </Content>
-            <Footer style={{ textAlign: 'center' }}>Made by <a target="_blank" href="https://github.com/Voikyrioh">Voikyrioh</a> the very first retarded, developed with <a target="_blank" href="https://fr.reactjs.org/">React.js ©</a> designed with <a target="_blank" href="https://ant.design/">Ant Design ©</a></Footer>
+            <UserSessionContext.Provider value={{userSession, setUserSession}}>
+                <RegistrationModal show={showRegisterModal} setModal={setShowRegisterModal} onLogged={setUserSession}/>
+                <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex'}}>
+                    <div className="logo" style={{width: '300px', float: "left"}}>
+                        <h1 style={{color: 'white', padding: 0, margin: 0}}>{title}</h1>
+                    </div>
+                    <Menu theme="dark" mode="horizontal"
+                          defaultSelectedKeys={['0']}
+                          activeKey={location?.pathname}
+                          selectedKeys={[location?.pathname]}
+                    >
+                            {Routes?.filter(route => route.condition(userSession) && route.topNav ? route : null).map(route => {return <Menu.Item key={route.url}><Link to={route.url}>{route.name}</Link></Menu.Item>})}
+                    </Menu>
+                    {userSession?.username ? loggedBlock : unloggedBlock}
+                </Header>
+                <Content className="base-content">
+                    <Layout className="site-layout-background">
+                        <Content className="main-content">
+                            <Switch>
+                                {Routes?.filter(route => route.condition(userSession)? route : null).map(route => {return <Route path={route.url}>{route.component}</Route>})}
+                            </Switch>
+                        </Content>
+                    </Layout>
+                </Content>
+                <Footer style={{ textAlign: 'center' }}>Made by <a target="_blank" href="https://github.com/Voikyrioh">Voikyrioh</a> the very first retarded, developed with <a target="_blank" href="https://fr.reactjs.org/">React.js ©</a> designed with <a target="_blank" href="https://ant.design/">Ant Design ©</a></Footer>
+            </UserSessionContext.Provider>
         </Layout>
     );
 }
